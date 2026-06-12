@@ -70,8 +70,7 @@ export function generateMockAccounts(count: number = 30) {
 }
 
 export function generateMockPosts(accountCount: number = 30, postsPerAccount: number = 20) {
-  const accounts = db.prepare('SELECT * FROM accounts ORDER BY RANDOM() LIMIT ?').get(accountCount) as any[];
-  const accountsList = Array.isArray(accounts) ? accounts : [accounts];
+  const accountsList = db.prepare('SELECT * FROM accounts ORDER BY RANDOM() LIMIT ?').all(accountCount) as any[];
 
   const insertPost = db.prepare(`
     INSERT OR IGNORE INTO posts (
@@ -396,14 +395,16 @@ export function initMockData() {
   }
 
   if (postCount.count < 50) {
-    const posts = generateMockPosts(25, 25);
-    console.log(`Generated ${posts.length} mock posts`);
+    const totalAccounts = accountCount.count || 30;
+    const posts = generateMockPosts(totalAccounts, 20);
+    console.log(`Generated ${posts.length} mock posts for ${totalAccounts} accounts`);
   }
 
   const liveCount = db.prepare('SELECT COUNT(*) as count FROM live_rooms').get() as { count: number };
   if (liveCount.count < 10) {
-    generateMockLiveRooms(25);
-    console.log(`Generated mock live rooms`);
+    const totalAccounts = accountCount.count || 30;
+    generateMockLiveRooms(totalAccounts);
+    console.log(`Generated mock live rooms for ${totalAccounts} accounts`);
   }
 
   const defaultDashboard = db.prepare('SELECT COUNT(*) as count FROM dashboards WHERE is_default = 1').get() as { count: number };
